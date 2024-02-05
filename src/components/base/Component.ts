@@ -52,8 +52,14 @@ export abstract class Component<T> {
     }
 
     // Вернуть корневой DOM-элемент
+    // Принимает данные с необязательными свойстваим
+    //  возвращает HTMLElement
     render(data?: Partial<T>): HTMLElement {
+        
+        // Купирует из data в this - считается как object
+        //если data определена то копирует иначе копируем пустой объект
         Object.assign(this as object, data ?? {});
+        
         return this.container;
     }
 }

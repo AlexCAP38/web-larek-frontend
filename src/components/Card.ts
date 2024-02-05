@@ -1,45 +1,63 @@
 import { Component } from "./base/Component";
 import { ILot, LotStatus } from "../types";
-import { bem, createElement, ensureElement, formatNumber } from "../utils/utils";
-import clsx from "clsx";
-import { defaultsDeep } from "lodash";
+import { IItem } from "../types";
+import { bem, createElement, ensureElement } from "../utils/utils";
+// import clsx from "clsx";
+// import { defaultsDeep } from "lodash";
 
 interface ICardActions {
     onClick: (event: MouseEvent) => void;
 }
 
+// export interface ICard<T> {
+//     title: string;
+//     description?: string | string[];
+//     image: string;
+//     status: T;
+// }
 
 
 
-export interface ICard<T> {
-    title: string;
-    description?: string | string[];
-    image: string;
-    status: T;
-}
+// "id": "854cef69-976d-4c2a-a18c-2aa45046c390",
+// "description": "Если планируете решать задачи в тренажёре, берите два.",
+// "image": "/5_Dots.svg",
+// "title": "+1 час в сутках",
+// "category": "софт-скил",
+// "price": 750
 
-export class Card<T> extends Component<ICard<T>> {
+/**
+ * Класс создает готовый HTML элемент из указанного шаблона
+ * Конкретный класс делает большую карточку для главной страницы 
+ * 
+ */
+
+export class Card extends Component<IItem> {
     protected _title: HTMLElement;
     protected _image?: HTMLImageElement;
-    protected _description?: HTMLElement;
     protected _button?: HTMLButtonElement;
+    protected _description?: HTMLElement;
+    protected _category?: HTMLElement;
+    protected _price?: HTMLElement;
+    protected _id?: HTMLElement;
 
     // принимает какойто блокнаме ???
     // принимает от родителя какойто container ????
     // действие необязательное
 
+    //Определяем какой будем использовать шаблон 
+
     constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
         super(container);
 
-        console.log(blockName)
-        //этот класс работает с темплейтом CARD
-        this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);        //HTML элемент параграф БЛОКнам берется 
-
-        this._image = ensureElement<HTMLImageElement>(`.${blockName}__image`, container);       //Картинка
-        this._button = container.querySelector(`.${blockName}__button`);        //Кнопка видимо добавть в корщину ???
+        this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);        //найти в шаблоне Название
+        this._image = ensureElement<HTMLImageElement>(`.${blockName}__image`, container);       //найти в шаблоне Картинку
+        this._button = container.querySelector(`.${blockName}__button`);        //Найти кнопку
         this._description = container.querySelector(`.${blockName}__description`);      //Описание
+        this._category = container.querySelector(`.${blockName}__category`);      //Категорию
+        this._price = container.querySelector(`.${blockName}__price`);      //Цена
 
-        if (actions?.onClick) {     //НАвешивает слушатель при условии ???????????
+        //ЭТо клик по карточке, Если событие передали как аргумент занчит выполнить 
+        if (actions?.onClick) {
             if (this._button) {
                 this._button.addEventListener('click', actions.onClick);
             } else {
@@ -57,8 +75,24 @@ export class Card<T> extends Component<ICard<T>> {
     }
 
     set title(value: string) {      //установить название
+
+        // console.log(value)
         this.setText(this._title, value);
+
     }
+
+    set price(value: number) {      //установить название
+
+        // console.log(value)
+        this.setText(this._price, value);
+    }
+
+    set category(value: string) {      //установить название
+
+        // console.log(value)
+        this.setText(this._category, value);
+    }
+
 
     get title(): string {      //получить название
         return this._title.textContent || '';
@@ -81,151 +115,158 @@ export class Card<T> extends Component<ICard<T>> {
     }
 }
 
+/** класс хранит в себе карточку для корзины
+ * 
+ */
 
-//-------------------------
 
+export class BasketItem extends Component<IItem> {
+    protected _title: HTMLElement;
+    protected _price: HTMLElement;
+    protected _button: HTMLElement;
 
-export type CatalogItemStatus = {
-    status: LotStatus,
-    label: string
-};
-
-export class CatalogItem extends Card<CatalogItemStatus> {
-    protected _status: HTMLElement;
-
-    constructor(container: HTMLElement, actions?: ICardActions) {
-        super('card', container, actions);
-        this._status = ensureElement<HTMLElement>(`.card__status`, container);
+    constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
+        super(container);
+        this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);        //найти в шаблоне Название
+        this._button = container.querySelector(`.${blockName}__button`);        //Найти кнопку
+        this._price = container.querySelector(`.${blockName}__price`);      //Цена
     }
 
-    set status({ status, label }: CatalogItemStatus) {
-        this.setText(this._status, label);
-        this._status.className = clsx('card__status', {
-            [bem(this.blockName, 'status', 'active').name]: status === 'active',
-            [bem(this.blockName, 'status', 'closed').name]: status === 'closed'
-        });
+
+    set title(value: string) {      //установить название
+
+        // console.log(value)
+        this.setText(this._title, value);
+
     }
+
+    set price(value: number) {      //установить название
+
+        // console.log(value)
+        this.setText(this._price, value);
+    }
+
 }
 
 
 //----------------
 
-export type AuctionStatus = {
-    status: string,
-    time: string,
-    label: string,
-    nextBid: number,
-    history: number[]
-};
+// export type AuctionStatus = {
+//     status: string,
+//     time: string,
+//     label: string,
+//     nextBid: number,
+//     history: number[]
+// };
 
-export class AuctionItem extends Card<HTMLElement> {
-    protected _status: HTMLElement;
+// export class AuctionItem extends Card<HTMLElement> {
+//     protected _status: HTMLElement;
 
-    constructor(container: HTMLElement, actions?: ICardActions) {
-        super('lot', container, actions);
-        this._status = ensureElement<HTMLElement>(`.lot__status`, container);
-    }
+//     constructor(container: HTMLElement, actions?: ICardActions) {
+//         super('lot', container, actions);
+//         this._status = ensureElement<HTMLElement>(`.lot__status`, container);
+//     }
 
-    set status(content: HTMLElement) {
-        this._status.replaceWith(content);
-    }
-}
+//     set status(content: HTMLElement) {
+//         this._status.replaceWith(content);
+//     }
+// }
 
 
 //--------------------------
 
-interface IAuctionActions {
-    onSubmit: (price: number) => void;
-}
+// interface IAuctionActions {
+//     onSubmit: (price: number) => void;
+// }
 
-export class Auction extends Component<AuctionStatus> {
-    protected _time: HTMLElement;
-    protected _label: HTMLElement;
-    protected _button: HTMLButtonElement;
-    protected _input: HTMLInputElement;
-    protected _history: HTMLElement;
-    protected _bids: HTMLElement
-    protected _form: HTMLFormElement;
+// export class Auction extends Component<AuctionStatus> {
+//     protected _time: HTMLElement;
+//     protected _label: HTMLElement;
+//     protected _button: HTMLButtonElement;
+//     protected _input: HTMLInputElement;
+//     protected _history: HTMLElement;
+//     protected _bids: HTMLElement
+//     protected _form: HTMLFormElement;
 
-    constructor(container: HTMLElement, actions?: IAuctionActions) {
-        super(container);
+//     constructor(container: HTMLElement, actions?: IAuctionActions) {
+//         super(container);
 
-        this._time = ensureElement<HTMLElement>(`.lot__auction-timer`, container);
-        this._label = ensureElement<HTMLElement>(`.lot__auction-text`, container);
-        this._button = ensureElement<HTMLButtonElement>(`.button`, container);
-        this._input = ensureElement<HTMLInputElement>(`.form__input`, container);
-        this._bids = ensureElement<HTMLElement>(`.lot__history-bids`, container);
-        this._history = ensureElement<HTMLElement>('.lot__history', container);
-        this._form = ensureElement<HTMLFormElement>(`.lot__bid`, container);
+//         this._time = ensureElement<HTMLElement>(`.lot__auction-timer`, container);
+//         this._label = ensureElement<HTMLElement>(`.lot__auction-text`, container);
+//         this._button = ensureElement<HTMLButtonElement>(`.button`, container);
+//         this._input = ensureElement<HTMLInputElement>(`.form__input`, container);
+//         this._bids = ensureElement<HTMLElement>(`.lot__history-bids`, container);
+//         this._history = ensureElement<HTMLElement>('.lot__history', container);
+//         this._form = ensureElement<HTMLFormElement>(`.lot__bid`, container);
 
-        this._form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            actions?.onSubmit?.(parseInt(this._input.value));
-            return false;
-        });
-    }
+//         this._form.addEventListener('submit', (event) => {
+//             event.preventDefault();
+//             actions?.onSubmit?.(parseInt(this._input.value));
+//             return false;
+//         });
+//     }
 
-    set time(value: string) {
-        this.setText(this._time, value);
-    }
-    set label(value: string) {
-        this.setText(this._label, value);
-    }
-    set nextBid(value: number) {
-        this._input.value = String(value);
-    }
-    set history(value: number[]) {
-        this._bids.replaceChildren(...value.map(item => createElement<HTMLUListElement>('li', {
-            className: 'lot__history-item',
-            textContent: formatNumber(item)
-        })));
-    }
+//     set time(value: string) {
+//         this.setText(this._time, value);
+//     }
+//     set label(value: string) {
+//         this.setText(this._label, value);
+//     }
+//     set nextBid(value: number) {
+//         this._input.value = String(value);
+//     }
+// set history(value: number[]) {
+//     this._bids.replaceChildren(...value.map(item => createElement<HTMLUListElement>('li', {
+//         className: 'lot__history-item',
+//         textContent: formatNumber(item)
+//     })));
+// }
 
-    set status(value: LotStatus) {
-        if (value !== 'active') {
-            this.setHidden(this._history);
-            this.setHidden(this._form);
-        } else {
-            this.setVisible(this._history);
-            this.setVisible(this._form);
-        }
-    }
+//     set status(value: LotStatus) {
+//         if (value !== 'active') {
+//             this.setHidden(this._history);
+//             this.setHidden(this._form);
+//         } else {
+//             this.setVisible(this._history);
+//             this.setVisible(this._form);
+//         }
+//     }
 
-    focus() {
-        this._input.focus();
-    }
-}
+//     focus() {
+//         this._input.focus();
+//     }
+// }
 
 
 //----------------------------
 
-export interface BidStatus {
-    amount: number;
-    status: boolean;
-}
+// export interface BidStatus {
+//     amount: number;
+//     status: boolean;
+// }
 
-export class BidItem extends Card<BidStatus> {
-    protected _amount: HTMLElement;
-    protected _status: HTMLElement;
-    protected _selector: HTMLInputElement;
+// export class BidItem extends Card<BidStatus> {
+//     protected _amount: HTMLElement;
+//     protected _status: HTMLElement;
+//     protected _selector: HTMLInputElement;
 
-    constructor(container: HTMLElement, actions?: ICardActions) {
-        super('bid', container, actions);
-        this._amount = ensureElement<HTMLElement>(`.bid__amount`, container);
-        this._status = ensureElement<HTMLElement>(`.bid__status`, container);
-        this._selector = container.querySelector(`.bid__selector-input`);
+//     constructor(container: HTMLElement, actions?: ICardActions) {
+//         super('bid', container, actions);
+//         this._amount = ensureElement<HTMLElement>(`.bid__amount`, container);
+//         this._status = ensureElement<HTMLElement>(`.bid__status`, container);
+//         this._selector = container.querySelector(`.bid__selector-input`);
 
-        if (!this._button && this._selector) {
-            this._selector.addEventListener('change', (event: MouseEvent) => {
-                actions?.onClick?.(event);
-            })
-        }
-    }
+//         if (!this._button && this._selector) {
+//             this._selector.addEventListener('change', (event: MouseEvent) => {
+//                 actions?.onClick?.(event);
+//             })
+//         }
+//     }
 
-    set status({ amount, status }: BidStatus) {
-        this.setText(this._amount, formatNumber(amount));
+// set status({ amount, status }: BidStatus) {
+//     this.setText(this._amount, formatNumber(amount));
 
-        if (status) this.setVisible(this._status);
-        else this.setHidden(this._status);
-    }
-}
+//     if (status) this.setVisible(this._status);
+//     else this.setHidden(this._status);
+// }
+// }

@@ -1,9 +1,12 @@
+//Структура ответа получаемового от сервера
 export type ApiListResponse<Type> = {
     total: number,
     items: Type[]
 };
 
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
+
+
 
 export class Api {
     readonly baseUrl: string;
@@ -24,6 +27,8 @@ export class Api {
         else return response.json()
             .then(data => Promise.reject(data.error ?? response.statusText));
     }
+
+//От сервера должный получать промис типа 
 
     get(uri: string) {
         return fetch(this.baseUrl + uri, {

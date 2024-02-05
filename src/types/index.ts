@@ -8,15 +8,17 @@ export interface IAuction {
     history?: number[];
 }
 
-export interface ILotItem {
+//Структура моей карточки
+export interface IItem {
     id: string;
-    title: string;
-    about: string;
-    description?: string;
+    description: string;
     image: string;
+    title: string;
+    category: string;
+    price: number
 }
 
-export type ILot = ILotItem & IAuction;
+export type ILot = IItem & IAuction;
 
 export type LotUpdate = Pick<ILot, 'id' | 'datetime' | 'status' | 'price' | 'history'>;
 

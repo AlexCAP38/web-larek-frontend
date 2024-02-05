@@ -3,91 +3,133 @@ import './scss/styles.scss';
 //********импорт библиотек */
 import { Api } from './components/base/api';
 import { EventEmitter } from './components/base/events';
-import {Page} from "./components/Page";
-import {cloneTemplate, createElement, ensureElement} from "./utils/utils";
-import { Card } from './components/Card';
-import {AppState, CatalogChangeEvent, LotItem} from "./components/AppData";
-import {Auction, AuctionItem, BidItem, CatalogItem} from "./components/Card";
-
-
-
-//инициалиазция экземпляров
-const events = new EventEmitter();
-const api = new Api('https://larek-api.nomoreparties.co/api/weblarek/');
-
+import { Page } from "./components/Page";
+import { cloneTemplate, createElement, ensureElement } from "./utils/utils";
+import { Card, BasketItem } from './components/Card';
+import { AppState, CatalogChangeEvent, LotItem } from "./components/AppData";
+// import { Auction, AuctionItem, BidItem } from "./components/Card";
+import { AuctionAPI } from './components/AuctionAPI';
+import { Modal } from "./components/common/Modal";
+import { Basket } from "./components/common/Basket";
 
 // Все шаблоны
-const successTemplate = ensureElement<HTMLTemplateElement>('#success');     //ордер
-const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');        //темплейт
-const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');     //темплейт
+const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');        //темплейт карточки для главной страницы
+const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');     //темплейт ПРЕВЬЮ
+const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');       //темплейт  КОРЗИНА
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');      //темплейт
-const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');       //темплейт
 const orderTemplate = ensureElement<HTMLTemplateElement>('#order');     //темплейт
 const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');     //темплейт
+const successTemplate = ensureElement<HTMLTemplateElement>('#success');     //ордер
 
+//инициалиазция экземпляров
+const events = new EventEmitter();        //Экземпляр работающий с событиями
 
-const appData = new AppState({}, events);
+//передаем основной урл + где будет храниться контент
+const api = new AuctionAPI('https://larek-api.nomoreparties.co/content/weblarek', 'https://larek-api.nomoreparties.co/api/weblarek');
 
-const page = new Page(document.body, events); 
+const appData = new AppState({}, events);      //Экземпляр хранить в себе информацию карточек
+const page = new Page(document.body, events);      //Экземпляр для работы с основным окном
+const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events, page);      //Экземпляр для работы с модалным окном
+const basket = new Basket(cloneTemplate(basketTemplate), events);      //Экземпляр хранить в себе информацию КОРЗИНЫ
 
-const card = new Card('gallery',cardCatalogTemplate);
+//*******************************************ЛОГИКА***************************
 
-
-
-events.on<CatalogChangeEvent>('items:changed', () => {
-    
-    page.catalog = appData.catalog.map(item => {
-        console.log(item)
-        const card = new CatalogItem(cloneTemplate(cardCatalogTemplate), {
-            onClick: () => events.emit('card:select', item)
-        });
-        return card.render({
-            title: item.title,
-            image: item.image,
-            description: item.about,
-            // status: {
-            //     status: item.status,
-            //     label: item.statusLabel
-            // },
-        });
-    });
-
-    // page.counter = appData.getClosedLots().length;
-});
-
-
-
-api.get('product/')
+// ПОЛУЧЕНИЕ ДАННЫХ с сервера и записываем из в экземпляр appData
+api.getLotList()
     .then(appData.setCatalog.bind(appData))
     .catch(err => {
         console.error(err);
     });
 
-console.log(appData.catalog)
+// ДОБАВЛЕНГИЕ карточек на основной экран
+events.on('items:changed', () => {
+
+    //Page это экземляр хранящий в себе места куда что-то надо вставлять
+    page.catalog = appData.catalog.map(item => {        //берем карточку из appData.catalog 
+
+        //создаем новый экземпляр карточки, клонируем шаблон, добавляем действие этому шаблону
+        const card = new Card('card', cloneTemplate(cardCatalogTemplate), {
+            onClick: () => events.emit('card:select', item)     //Событие мработает когда кликнем по карточке 
+        });
+
+        // закидываем объект с данными из итема
+        // функция установит значения в экзепляр через сетеры
+        return card.render({
+            title: item.title,
+            image: item.image,
+            description: item.about,
+            category: item.category,
+            price: item.price
+        });
+    });
+
+});
+
+// Событие при клике на карточку на главном экране
+events.on('card:select', (item: LotItem) => {
+    appData.setPreview(item);       //открываем превью, передаем туда карточку
+});
 
 
+// ОТКРЫТЬ МОДАЛЬНОЕ ОКНО ПРЕВЬЮ, событие срабатывает при клик по карточке на основной странице.
+// Параметр карточка по которой кликнули
+events.on('preview:changed', (item: LotItem) => {
 
-// events.on('click',()=>{
+    page.locked = true;    //Блокируем прокрутку основного экрана
 
-//     console.log(cardCatalogTemplate);
+    //Создаем новый объект Карточка с темплейтом ПРЕВЬЮ
+    //Класс принимает параметры: название теплейта (строку)/ НТМЛ элемент Клон превью/ событие т.к в шаблоне есть кнопка 
+    const card = new Card('card', cloneTemplate(cardPreviewTemplate), {
+        onClick: () => {
+            events.emit('basket:click', item);      //вызываем событие и закидываем туда карточку по которой кликнули  
+        }
+    });
 
-//     api.get('product/').then((response)=>{
-//         console.log(response);
-
-//     })
-// });
-
-
-
-// events.emit('click')
-
-
-
+    modal.render({      // Рендреим карточку в модальное окно
+        content: card.render({
+            title: item.title,
+            image: item.image,
+            description: item.about,
+            category: item.category,
+            price: item.price
+        })
+    });
+});
 
 
+// НАЖАЛИ ДОБАВИТЬ В КОРЗИНУ. Событие клик по кнопке добавления товара в корзину в модалке
+// передаем аргумент item текущую карточку
+events.on('basket:click', ((item: LotItem) => {
+
+    //!!!!!!!!!!!!!!!!!!! ЭТИМ ДЕЙСТИЕМ НАДО добавлять товар в корзину баскета
+    //ТУТ ЛОГИКА
+
+    //Создаем HTML карточку из шаблона для "карточка для корзины
+    //событие пока не устанавливаю
+
+    const basketItem = new BasketItem('card', cloneTemplate(cardBasketTemplate), { onClick: () => { console.log('нажата кнопка удаления') } })
+
+    basket.items = [basketItem.render({
+            title: item.title,
+            price: item.price
+        })]
 
 
+    
+    modal.close();
+}))
 
+
+//НАЖАЛИ НА КОРЗИНУ, Событие по клику на корзину
+events.on('basket:open', (() => {
+
+
+basket.render();
+
+    //Тут надо рендерить модальку и запихивать туда корзину
+    // modal.render ({})
+    console.log('Нажалась корзина')
+}))
 
 
 
@@ -101,7 +143,6 @@ console.log(appData.catalog)
 // import {Auction, AuctionItem, BidItem, CatalogItem} from "./components/Card";
 // import {cloneTemplate, createElement, ensureElement} from "./utils/utils";
 // import {Modal} from "./components/common/Modal";
-// import {Basket} from "./components/common/Basket";
 // import {Tabs} from "./components/common/Tabs";
 // import {IOrderForm} from "./types";
 // import {Order} from "./components/Order";
@@ -153,7 +194,7 @@ console.log(appData.catalog)
 //     page.catalog = appData.catalog.map(item => {
 //         const card = new CatalogItem(cloneTemplate(cardCatalogTemplate), {
 //             onClick: () => events.emit('card:select', item)
-//         });        
+//         });
 //         return card.render({
 //             title: item.title,
 //             image: item.image,
@@ -276,10 +317,7 @@ console.log(appData.catalog)
 //     basket.total = total;
 // })
 
-// // Открыть лот
-// events.on('card:select', (item: LotItem) => {
-//     appData.setPreview(item);
-// });
+
 
 // // Изменен открытый выбранный лот
 // events.on('preview:changed', (item: LotItem) => {
@@ -343,12 +381,5 @@ console.log(appData.catalog)
 // events.on('modal:close', () => {
 //     page.locked = false;
 // });
-
-// // Получаем лоты с сервера
-// api.getLotList()
-//     .then(appData.setCatalog.bind(appData))
-//     .catch(err => {
-//         console.error(err);
-//     });
 
 

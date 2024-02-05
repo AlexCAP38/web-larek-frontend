@@ -1,12 +1,17 @@
-import {Component} from "./base/Component";
-import {IEvents} from "./base/events";
-import {ensureElement} from "../utils/utils";
+import { Component } from "./base/Component";
+import { IEvents } from "./base/events";
+import { ensureElement } from "../utils/utils";
 
-interface IPage {
+export interface IPage {
     counter: number;
     catalog: HTMLElement[];
     locked: boolean;
 }
+
+/**
+ * Класс для работы с основным окном, управляет
+ * 
+ */
 
 export class Page extends Component<IPage> {
     protected _counter: HTMLElement;
@@ -14,20 +19,16 @@ export class Page extends Component<IPage> {
     protected _wrapper: HTMLElement;
     protected _basket: HTMLElement;
 
-
-//принимает HTML элемент body и экземпляр Events
-
-
     constructor(container: HTMLElement, protected events: IEvents) {
         super(container);
 
-        this._counter = ensureElement<HTMLElement>('.header__basket-counter');      //HTML счетчик корзины
-        this._catalog = ensureElement<HTMLElement>('.catalog__items');      //HTML контейнер куда добавлять готовые карточки
-        this._wrapper = ensureElement<HTMLElement>('.page__wrapper');       //HTML основная страница
-        this._basket = ensureElement<HTMLElement>('.header__basket');       //HTML кнопка корзина
+        this._counter = ensureElement<HTMLElement>('.header__basket-counter');      //счетчик на корзине
+        this._catalog = ensureElement<HTMLElement>('.gallery');      //место для добавление карточек 
+        this._wrapper = ensureElement<HTMLElement>('.page__wrapper');       //основная страница
+        this._basket = ensureElement<HTMLElement>('.header__basket');       //кнопка корзины
 
         this._basket.addEventListener('click', () => {      //Устанавливаем слушатель на клик кнопки корзины
-            this.events.emit('bids:open');
+            this.events.emit('basket:open');            //вызываем событие
         });
     }
 
@@ -36,12 +37,11 @@ export class Page extends Component<IPage> {
     }
 
     //Добавить карточки на старницу
-    set catalog(items: HTMLElement[]) {     //принимает массив html элементов     
-
-        this._catalog.replaceChildren(...items);
+    set catalog(items: HTMLElement[]) {     //принимает массив карточек (html элементов)
+        this._catalog.replaceChildren(...items);        //добавляем их в Catalog
     }
 
-    set locked(value: boolean) {        // ЗАБЛОКИРОВАТЬ СКРОЛ нахер выкинуть 
+    set locked(value: boolean) {        // Блокировка прокрутки Скролла
         if (value) {
             this._wrapper.classList.add('page__wrapper_locked');
         } else {
