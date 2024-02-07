@@ -2,11 +2,21 @@ import { Component } from "./base/Component";
 import { ILot, LotStatus } from "../types";
 import { IItem } from "../types";
 import { bem, createElement, ensureElement } from "../utils/utils";
+import { LotItem } from "./AppData";
 // import clsx from "clsx";
 // import { defaultsDeep } from "lodash";
 
 interface ICardActions {
     onClick: (event: MouseEvent) => void;
+}
+
+
+enum Category {
+    'софт-скил' = '#83FA9D',
+    'другое' = '#FAD883',
+    'дополнительное' = '#B783FA',
+    'кнопка' = '#83DDFA',
+    'хард-скил' = '#FAA083',
 }
 
 // export interface ICard<T> {
@@ -33,7 +43,7 @@ interface ICardActions {
 
 export class Card extends Component<IItem> {
     protected _title: HTMLElement;
-    protected _image?: HTMLImageElement;
+    protected _image?: HTMLImageElement | null;
     protected _button?: HTMLButtonElement;
     protected _description?: HTMLElement;
     protected _category?: HTMLElement;
@@ -50,7 +60,8 @@ export class Card extends Component<IItem> {
         super(container);
 
         this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);        //найти в шаблоне Название
-        this._image = ensureElement<HTMLImageElement>(`.${blockName}__image`, container);       //найти в шаблоне Картинку
+        this._image = container.querySelector(`.${blockName}__image`);       //найти в шаблоне Картинку
+        // this._image = ensureElement<HTMLImageElement>(`.${blockName}__image`, container);       //найти в шаблоне Картинку
         this._button = container.querySelector(`.${blockName}__button`);        //Найти кнопку
         this._description = container.querySelector(`.${blockName}__description`);      //Описание
         this._category = container.querySelector(`.${blockName}__category`);      //Категорию
@@ -75,9 +86,22 @@ export class Card extends Component<IItem> {
     }
 
     set title(value: string) {      //установить название
-
-        // console.log(value)
         this.setText(this._title, value);
+    }
+
+    set checkPrice(item: LotItem) {          //Проверка если у карточки нет цены заблокировать кнопку вывести сообщение
+        if (typeof(item.price) != 'number') {
+            this.setText(this._price, 'Товар не имеет цены, обратитесь к администратору')
+            this.setDisabled(this._button, true)
+        }
+    }
+
+    set switchButton(value: LotItem) {      //Если товар довален в карзину изменить кнопку
+        if (value.status === 'NOADD') {
+            this.setText(this._button, 'В корзину')
+        } else {
+            this.setText(this._button, 'Удалить из корзины')
+        }
 
     }
 
@@ -88,11 +112,10 @@ export class Card extends Component<IItem> {
     }
 
     set category(value: string) {      //установить название
-
-        // console.log(value)
+        const color: string = Category[value as keyof typeof Category];
+        this._category.style.background = color;
         this.setText(this._category, value);
     }
-
 
     get title(): string {      //получить название
         return this._title.textContent || '';
@@ -116,37 +139,8 @@ export class Card extends Component<IItem> {
 }
 
 /** класс хранит в себе карточку для корзины
- * 
+ *
  */
-
-
-export class BasketItem extends Component<IItem> {
-    protected _title: HTMLElement;
-    protected _price: HTMLElement;
-    protected _button: HTMLElement;
-
-    constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
-        super(container);
-        this._title = ensureElement<HTMLElement>(`.${blockName}__title`, container);        //найти в шаблоне Название
-        this._button = container.querySelector(`.${blockName}__button`);        //Найти кнопку
-        this._price = container.querySelector(`.${blockName}__price`);      //Цена
-    }
-
-
-    set title(value: string) {      //установить название
-
-        // console.log(value)
-        this.setText(this._title, value);
-
-    }
-
-    set price(value: number) {      //установить название
-
-        // console.log(value)
-        this.setText(this._price, value);
-    }
-
-}
 
 
 //----------------

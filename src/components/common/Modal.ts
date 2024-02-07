@@ -5,22 +5,10 @@ import { IPage } from "../Page";
 
 
 interface IModalData {
-    content: HTMLElement;
+    content: HTMLElement | HTMLElement[];
 }
 
-/**
- * Класс работающий с модальным окном.
- * @constructor
- * @param container - принимает 
- * @param event - # экземпляр событий
- * @param page - # экземпляр основного окна 
- * @method open() - открыть окно 
- * @method close() - закрыть окно, снять блокировку скрола с экрана
- * @method render() - 
- */
-
-
-export class Modal extends Component<IModalData> {
+export class Modal extends Component<IModalData> {      //Класс работающий с модальным окном.
     protected _closeButton: HTMLButtonElement;
     protected _content: HTMLElement;
 
@@ -35,16 +23,15 @@ export class Modal extends Component<IModalData> {
         this._content.addEventListener('click', (event) => event.stopPropagation());
     }
 
-    set content(value: HTMLElement) {
+    set content(value: HTMLElement) {       //Добавить хтмл элемент в контейнер для отображения в модальном окне
         this._content.replaceChildren(value);
     }
 
     open() {
+        this.page.locked = true;    //Блокируем прокрутку основного экрана
         this.container.classList.add('modal_active');
         this.events.emit('modal:open');
     }
-
-
 
     close() {
         if (this.page) {    //снятие блокировки с экрана

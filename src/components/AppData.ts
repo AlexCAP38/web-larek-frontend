@@ -1,10 +1,10 @@
-// import _ from "lodash";
+import _ from "lodash";
 // import {dayjs, formatNumber} from "../utils/utils";
 
-import {Model} from "./base/Model";
-import {FormErrors, IAppState, IBasketItem, ILot, IOrder, IOrderForm, LotStatus} from "../types";
-import {IItem} from "../types";
-
+import { Model } from "./base/Model";
+import { FormErrors, IAppState, IBasketItem, ILot, IOrder, IOrderForm, LotStatus } from "../types";
+import { IItem } from "../types";
+import { IEvents } from "./base/events";
 
 //Мы принимает от АПИ массив
 export type CatalogChangeEvent = {
@@ -12,24 +12,21 @@ export type CatalogChangeEvent = {
 };
 
 
-
-//Класс хранящий инфорацию о фильме
-export class LotItem extends Model<IItem> {
-    about: string;
-    description: string;
-    // id: string;
-    category: string;
-
-    image: string;
+export class LotItem extends Model<IItem> {     //Новый класс хранящий в себе данные и метод для события
+    id: string;
     title: string;
+    image: string;
+    description: string;
+    about: string;
+    category: string;
+    price: number;
+    status: 'ADD' | 'NOADD' = 'NOADD';
+
     // datetime: string;
     // history: number[];
     // minPrice: number;
-    price: number;
     // status: LotStatus;
-
     protected myLastBid: number = 0;
-
     clearBid() {
         this.myLastBid = 0;
     }
@@ -86,62 +83,74 @@ export class LotItem extends Model<IItem> {
     //     }
     // }
 
-    get nextBid(): number {
-        return Math.floor(this.price * 1.1);
-    }
+    // get nextBid(): number {
+    //     return Math.floor(this.price * 1.1);
+    // }
 }
 
 
-//Класс для создания карточки 
 
+
+//Класс хранящий данные
 export class AppState extends Model<IItem> {
-    id: string;
-    description: string;
-    image: string;
-    title: string;
-    category: string;
-    price: number
 
-
-    basket: string[];       //корзина
-    catalog: LotItem[];     //каталог с карточками
-    loading: boolean;       //ХЗ че такое 
+    basket: Array<{}>;       //корзина, для хранения купленных товар
+    catalog: LotItem[];     //каталог с карточками полученная от АПИ
     order: IOrder = {
         email: '',
         phone: '',
         items: []
     };
+
     preview: string | null;
     formErrors: FormErrors = {};
+    loading: boolean;       //ХЗ че такое 
 
-    // toggleOrderedLot(id: string, isIncluded: boolean) {
-    //     if (isIncluded) {
-    //         this.order.items = _.uniq([...this.order.items, id]);
-    //     } else {
-    //         this.order.items = _.without(this.order.items, id);
-    //     }
-    // }
+    constructor(data: Partial<IItem>, events: IEvents) {
+        super(data, events);
+        this.basket = [];
+    }
 
-    // clearBasket() {
-    //     this.order.items.forEach(id => {
-    //         this.toggleOrderedLot(id, false);
-    //         this.catalog.find(it => it.id === id).clearBid();
-    //     });
-    // }
+    setCatalog(items: IItem[]) {                                                 //получить Api
+        this.catalog = items.map(item => new LotItem(item, this.events));       //Создать новый массив из экземпляра LotItem + событие Event
+        this.emitChanges('items:changed', { catalog: this.catalog });       //Вызвать событие, карточки сформированные
+    }
 
-    // getTotal() {
-    //     return this.order.items.reduce((a, c) => a + this.catalog.find(it => it.id === c).price, 0)
-    // }
+    set addItemInBasket(items: LotItem) {       //Запомнить покупку
+        this.basket.push(items);
+    }
+    get addItemInBasket(): any {       //Запомнить покупку
+        return this.basket;
+    }
 
-    //Принимаем от АПИ ответ ввиде массива  под свой проейт нужно переписать тип ILOT
-    setCatalog(items: ILot[]) {
-        // console.log(items)
-        this.catalog = items.map(item => new LotItem(item, this.events));
-        this.emitChanges('items:changed', { catalog: this.catalog });
+    clearBasket() {
+        this.order.items.forEach(id => {
+            this.toggleOrderedLot(id, false);
+            this.catalog.find(it => it.id === id).clearBid();
+        });
+    }
+
+    toggleOrderedLot(id: string, isIncluded: boolean) {
+        if (isIncluded) {
+            this.order.items = _.uniq([...this.order.items, id]);
+        } else {
+            this.order.items = _.without(this.order.items, id);
+        }
+    }
+
+    getTotal() {        //Посчитать сумму товаров добавленных в корзину
+        const sum = this.basket.reduce((a: number, c: LotItem) => {
+            return a + c.price;
+        }, 0);
+        return sum as number
+    }
+
+    checkAddBasket(item: LotItem): boolean {        //Если статус у товара АДД значит он добавлен в корзину
+        if (item.status === 'ADD') return true
     }
 
     setPreview(item: LotItem) {
-        // this.preview = item.id;
+        this.preview = item.id;
         this.emitChanges('preview:changed', item);
     }
 

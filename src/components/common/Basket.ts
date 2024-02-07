@@ -9,10 +9,7 @@ interface IBasketView {
     selected: string[];
 }
 
-// на выходе получаем объект где содержится видимо корзина заказов
-//Класс хранящий все корзину
-
-export class Basket extends Component<IBasketView> {
+export class Basket extends Component<IBasketView> {        //Класс хранящий всю корзину
     protected _list: HTMLElement;
     protected _total: HTMLElement;
     protected _button: HTMLElement;
@@ -21,22 +18,18 @@ export class Basket extends Component<IBasketView> {
         super(container);
 
         this._list = ensureElement<HTMLElement>('.basket__list', this.container);
-        this._total = this.container.querySelector('.basket__total');
-        this._button = this.container.querySelector('.basket__action');
+        this._total = this.container.querySelector('.basket__price');
+        this._button = this.container.querySelector('.basket__button');
 
-        if (this._button) {
+        if (this._button) {     //НАЖАЛИ НА конпку оформить заказ, вызвать событие
             this._button.addEventListener('click', () => {
                 events.emit('order:open');
-
-                console.log('НАЖАЛИ НА конпку оформить')
             });
         }
-
         this.items = [];
     }
 
-    set items(items: HTMLElement[]) {
-
+    set items(items: HTMLElement[]) {       //Добавить HTML разметку в LIST
         if (items.length) {
             this._list.replaceChildren(...items);
         } else {
@@ -44,10 +37,9 @@ export class Basket extends Component<IBasketView> {
                 textContent: 'Корзина пуста'
             }));
         }
-        console.log(this._list)
     }
 
-    set selected(items: string[]) {
+    set selected(items: string[] | object[]) {
         if (items.length) {
             this.setDisabled(this._button, false);
         } else {
@@ -58,5 +50,4 @@ export class Basket extends Component<IBasketView> {
     set total(total: number) {
         this.setText(this._total, total);
     }
-
 }
