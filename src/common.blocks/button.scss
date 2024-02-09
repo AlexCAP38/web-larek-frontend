@@ -17,4 +17,9 @@
     @include mixins.button(white, $primaryLight, $primaryLight);
     border: $hoverBorder;
   }
+
+  &_press {
+    @include mixins.button(white, $primaryLight, $primaryLight);
+    border: $hoverBorder;
+  }
 }

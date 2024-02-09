@@ -7,53 +7,31 @@ export interface IItem {        //Структура моей карточки
     price: number;
 }
 
-export type ILot = IItem & IAuction;
-
-
-
-
-export interface IAppState {
-    catalog: ILot[];
-    basket: string[];
-    preview: string | null;
-    order: IOrder | null;
-    loading: boolean;
+export type PayButtons = {
+    currentButton: HTMLButtonElement,
+    allButton: HTMLButtonElement[]
 }
-
-export type LotStatus = 'wait' | 'active' | 'closed';
-
-export interface IAuction {
-    status: LotStatus;
-    datetime: string;
-    price: number;
-    minPrice: number;
-    history?: number[];
-}
-
-
-
-export type LotUpdate = Pick<ILot, 'id' | 'datetime' | 'status' | 'price' | 'history'>;
-
-export type IBasketItem = Pick<ILot, 'id' | 'title' | 'price'> & {
-    isMyBid: boolean
-};
-
 
 export interface IOrderForm {
     email: string;
     phone: string;
+    address: string;
+    payment: string;
 }
 
 export interface IOrder extends IOrderForm {
-    items: string[]
+    items: Array<object>
+}
+
+
+export interface IOOrder extends IOrderForm{
+total:number;
+items: string[]
 }
 
 export type FormErrors = Partial<Record<keyof IOrder, string>>;
 
-export interface IBid {
-    price: number
-}
-
 export interface IOrderResult {
     id: string;
+    total: number
 }

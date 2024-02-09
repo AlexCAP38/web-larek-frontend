@@ -1,8 +1,7 @@
 import _ from "lodash";
-// import {dayjs, formatNumber} from "../utils/utils";
 
 import { Model } from "./base/Model";
-import { FormErrors, IAppState, IBasketItem, ILot, IOrder, IOrderForm, LotStatus } from "../types";
+import { PayButtons, FormErrors, IOrder, IOrderForm } from "../types";
 import { IItem } from "../types";
 import { IEvents } from "./base/events";
 
@@ -10,7 +9,6 @@ import { IEvents } from "./base/events";
 export type CatalogChangeEvent = {
     catalog: LotItem[]
 };
-
 
 export class LotItem extends Model<IItem> {     //Новый класс хранящий в себе данные и метод для события
     id: string;
@@ -21,94 +19,24 @@ export class LotItem extends Model<IItem> {     //Новый класс хран
     category: string;
     price: number;
     status: 'ADD' | 'NOADD' = 'NOADD';
-
-    // datetime: string;
-    // history: number[];
-    // minPrice: number;
-    // status: LotStatus;
-    protected myLastBid: number = 0;
-    clearBid() {
-        this.myLastBid = 0;
-    }
-
-    // placeBid(price: number): void {
-    //     this.price = price;
-    //     this.history = [...this.history.slice(1), price];
-    //     this.myLastBid = price;
-
-    //     if (price > (this.minPrice * 10)) {
-    //         this.status = 'closed';
-    //     }
-    //     this.emitChanges('auction:changed', { id: this.id, price });
-    // }
-
-    // get isMyBid(): boolean {
-    //     return this.myLastBid === this.price;
-    // }
-
-    // get isParticipate(): boolean {
-    //     return this.myLastBid !== 0;
-    // }
-
-    // get statusLabel(): string {
-    //     switch (this.status) {
-    //         case "active":
-    //             return `Открыто до ${dayjs(this.datetime).format('D MMMM [в] HH:mm')}`
-    //         case "closed":
-    //             return `Закрыто ${dayjs(this.datetime).format('D MMMM [в] HH:mm')}`
-    //         case "wait":
-    //             return `Откроется ${dayjs(this.datetime).format('D MMMM [в] HH:mm')}`
-    //         default:
-    //             return this.status;
-    //     }
-    // }
-
-    // get timeStatus(): string {
-    //     if (this.status === 'closed') return 'Аукцион завершен';
-    //     else return dayjs
-    //         .duration(dayjs(this.datetime).valueOf() - Date.now())
-    //         .format('D[д] H[ч] m[ мин] s[ сек]');
-    // }
-
-    // get auctionStatus(): string {
-    //     switch (this.status) {
-    //         case 'closed':
-    //             return `Продано за ${formatNumber(this.price)}₽`;
-    //         case 'wait':
-    //             return 'До начала аукциона';
-    //         case 'active':
-    //             return 'До закрытия лота';
-    //         default:
-    //             return '';
-    //     }
-    // }
-
-    // get nextBid(): number {
-    //     return Math.floor(this.price * 1.1);
-    // }
 }
 
 
+export class AppState extends Model<IItem> {        //Класс хранящий данные
 
-
-//Класс хранящий данные
-export class AppState extends Model<IItem> {
-
-    basket: Array<{}>;       //корзина, для хранения купленных товар
     catalog: LotItem[];     //каталог с карточками полученная от АПИ
     order: IOrder = {
+        address: '',
+        payment: '',
         email: '',
         phone: '',
-        items: []
+        items: []       //корзина, для хранения купленных товар
     };
 
-    preview: string | null;
     formErrors: FormErrors = {};
-    loading: boolean;       //ХЗ че такое 
 
     constructor(data: Partial<IItem>, events: IEvents) {
         super(data, events);
-        this.basket = [];
     }
 
     setCatalog(items: IItem[]) {                                                 //получить Api
@@ -117,29 +45,38 @@ export class AppState extends Model<IItem> {
     }
 
     set addItemInBasket(items: LotItem) {       //Запомнить покупку
-        this.basket.push(items);
+        this.order.items.push(items);       //поместить карточку в order
+
     }
     get addItemInBasket(): any {       //Запомнить покупку
-        return this.basket;
+        return this.order.items;
     }
 
-    clearBasket() {
-        this.order.items.forEach(id => {
-            this.toggleOrderedLot(id, false);
-            this.catalog.find(it => it.id === id).clearBid();
+    get getIdOrder():string[] {
+        return this.order.items.reduce<string[]>((accum:string[], item:LotItem) => {
+            return [...accum, item.id]
+        }, [])
+
+    }
+
+
+    deleteItemOrder(item: LotItem) {
+        this.order.items = this.order.items.filter((element: LotItem) => {        //Ищем в корзине карточку по id
+            if (element.id === item.id) {       //id нажатой карточки совпадает с id карточки в массиве 
+                element.status = "NOADD"        //поставить ей статус не в корзине
+                return false        //удалить из массива
+            } return true           //либо оставить в массиве
         });
     }
 
-    toggleOrderedLot(id: string, isIncluded: boolean) {
-        if (isIncluded) {
-            this.order.items = _.uniq([...this.order.items, id]);
-        } else {
-            this.order.items = _.without(this.order.items, id);
-        }
+    clearBasket() {
+        this.catalog.forEach(id => {
+            id.status = 'NOADD';
+        });
     }
 
     getTotal() {        //Посчитать сумму товаров добавленных в корзину
-        const sum = this.basket.reduce((a: number, c: LotItem) => {
+        const sum = this.order.items.reduce((a: number, c: LotItem) => {
             return a + c.price;
         }, 0);
         return sum as number
@@ -149,37 +86,53 @@ export class AppState extends Model<IItem> {
         if (item.status === 'ADD') return true
     }
 
-    setPreview(item: LotItem) {
-        this.preview = item.id;
-        this.emitChanges('preview:changed', item);
+    setOrderFieldPay(field: keyof IOrderForm, value: string) {
+        this.order[field] = value;
+        this.validateOrderPay()     //Если прошли проверку можно продолжить оформлять закза
     }
-
-    // getActiveLots(): LotItem[] {
-    //     return this.catalog
-    //         .filter(item => item.status === 'active' && item.isParticipate);
-    // }
-
-    // getClosedLots(): LotItem[] {
-    //     return this.catalog
-    //         .filter(item => item.status === 'closed' && item.isMyBid)
-    // }
 
     setOrderField(field: keyof IOrderForm, value: string) {
         this.order[field] = value;
+        this.validateOrder()         //Если прошли проверку можно оформлять заказ
+    }
 
-        if (this.validateOrder()) {
-            this.events.emit('order:ready', this.order);
+    checkPay(data: PayButtons) {       //Проверка кнопки оплаты 
+        const { currentButton, allButton } = data;
+        if (!currentButton.classList.contains('button_press')) {        //Класса нет
+            allButton.forEach((item) => {
+                if (item !== currentButton) item.classList.remove('button_press');      //У все остальных кнопок убрать состояние выделенности
+            })
+            return 'button_press'     // выделить кнопку
         }
     }
 
-    validateOrder() {
+    validateOrderPay() {       //Проверка на заполннеость данных в экземпляре
         const errors: typeof this.formErrors = {};
+
+        if (!this.order.payment) {
+            errors.address = 'Необходимо выбрать оплату';
+        }
+
+        if (!this.order.address) {
+            errors.address = 'Необходимо указать адрес';
+        }
+
+        this.formErrors = errors;
+        this.events.emit('formErrorsPay:change', this.formErrors);
+        return Object.keys(errors).length === 0;
+    }
+
+    validateOrder() {       //Проверка на заполннеость данных в экземпляре
+        const errors: typeof this.formErrors = {};
+
         if (!this.order.email) {
             errors.email = 'Необходимо указать email';
         }
+
         if (!this.order.phone) {
             errors.phone = 'Необходимо указать телефон';
         }
+
         this.formErrors = errors;
         this.events.emit('formErrors:change', this.formErrors);
         return Object.keys(errors).length === 0;
