@@ -1,0 +1,203 @@
+<diagram program="umletino" version="15.1"><zoom_level>8</zoom_level><element><id>UMLClass</id><coordinates><x>64</x><y>1496</y><w>168</w><h>152</h></coordinates><panel_attributes>Interface
+&lt;Ipage&gt;
+--
+counter: number
+catalog: HTMLElement[]
+locked: boolean</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>320</x><y>1496</y><w>200</w><h>152</h></coordinates><panel_attributes>Page
+--
+
+# events: IEvents
+
+--
+
+set counter(value: number)
+set catalog(items: HTMLElement[])
+set locked(value: boolean)
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>64</x><y>1688</y><w>168</w><h>152</h></coordinates><panel_attributes>Interface
+&lt;IBasketView&gt;
+--
+items: HTMLElement[]
+total: number
+selected: string[]</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>320</x><y>1688</y><w>216</w><h>152</h></coordinates><panel_attributes>Basket
+--
+
+# events: IEvents
+
+--
+
+set items(items: HTMLElement[])
+set selected(items: string[] | object[])
+set total(total: number) </panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>224</x><y>1560</y><w>112</w><h>24</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>120;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>224</x><y>1760</y><w>112</w><h>24</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>120;10;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>712</x><y>1432</y><w>352</w><h>232</h></coordinates><panel_attributes>/AbstractClass Component/
+--
+
+#R container: HTMLElement
+
+--
+
++ toggleClass(element: HTMLElement, className: string, force?: boolean)
++ addClass(element: HTMLElement, className: string)
++ removeClass(element: HTMLElement, className: string)
+# setText(element: HTMLElement, value: unknown)
++ setDisabled(element: HTMLElement, state: boolean)
+# setHidden(element: HTMLElement)
+# setVisible(element: HTMLElement)
+# setImage(element: HTMLImageElement, src: string, alt?: string)
++ render(data?: Partial&lt;T&gt;): HTMLElement
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>720</x><y>1792</y><w>168</w><h>152</h></coordinates><panel_attributes>Modal
+--
+
+# events: IEvents
+# page?: IPage
+
+--
+
++ open()
++ close()
++ render(data: IModalData): HTMLElement</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>512</x><y>1560</y><w>216</w><h>24</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>250;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>528</x><y>1600</y><w>200</w><h>176</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>230;10;10;200</additional_attributes></element><element><id>UMLClass</id><coordinates><x>728</x><y>2016</y><w>240</w><h>152</h></coordinates><panel_attributes>Interface
+&lt;IModalData&gt;
+--
+ content: HTMLElement | HTMLElement[]</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>800</x><y>1656</y><w>32</w><h>152</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>20;10;10;170</additional_attributes></element><element><id>Relation</id><coordinates><x>824</x><y>1936</y><w>48</w><h>96</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;40;100</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1080</x><y>1792</y><w>168</w><h>152</h></coordinates><panel_attributes>Success
+--
+
++ actions: ISuccessActions
+
+--
+
+set totalPrice(value: number)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1072</x><y>2016</y><w>240</w><h>152</h></coordinates><panel_attributes>Interface
+&lt;ISuccessActions&gt;
+--
+onClick: () =&gt; void</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1160</x><y>1936</y><w>48</w><h>96</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;40;100</additional_attributes></element><element><id>Relation</id><coordinates><x>960</x><y>1656</y><w>216</w><h>152</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;250;170</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1416</x><y>1192</y><w>280</w><h>272</h></coordinates><panel_attributes>Form
+--
+
+
+--
+
+# onInputChange(field: keyof T, value: string)
+set valid(value: boolean)
+set errors(value: string)
++ render(state?: Partial&lt;T&gt; &amp; IFormState)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1056</x><y>1336</y><w>376</w><h>248</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;290;450;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1400</x><y>1568</y><w>280</w><h>272</h></coordinates><panel_attributes>Card
+--
+
+# blockName: string
++ actions?: ICardActions
+
+--
+
+set id(value: string)
+get id(): string
+set title(value: string)
+set checkPrice(item: LotItem)
+set switchButton(value: LotItem)
+set price(value: number)
+set category(value: string)
+get title(): string
+set image(value: string)
+set description(value: string | string[])</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1056</x><y>1568</y><w>360</w><h>176</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;430;200</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1056</x><y>1040</y><w>240</w><h>152</h></coordinates><panel_attributes>Interface
+&lt;IFormState&gt;
+--
+    valid: boolean;
+    errors: string[];</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1288</x><y>1120</y><w>144</w><h>136</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>160;150;10;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1880</x><y>1024</y><w>280</w><h>272</h></coordinates><panel_attributes>Order
+--
+constructor:
+
++ container: HTMLFormElement
++ events: IEvents
+
+--
+set phone(value: string)
+set email(value: string)</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1688</x><y>1144</y><w>208</w><h>176</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;200;240;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1880</x><y>1392</y><w>280</w><h>272</h></coordinates><panel_attributes>OrderPay
+--
+
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1688</x><y>1376</y><w>208</w><h>168</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;240;190</additional_attributes></element><element><id>UMLClass</id><coordinates><x>0</x><y>960</y><w>2208</w><h>1256</h></coordinates><panel_attributes>VIEW
+bg=green
+layer=0
+transparency=90</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2656</x><y>744</y><w>456</w><h>648</h></coordinates><panel_attributes>MODEL
+bg=blue
+layer=0
+transparency=90</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2688</x><y>784</y><w>304</w><h>168</h></coordinates><panel_attributes>Card
+--
+
++R baseUrl:string
+# options: RequesInit
+
+--
+
+# handleResponse(response: Response): Promise&lt;object&gt;
++ get(uri: string)
++ post(uri: string, data: object, method: ApiPostMethods = 'POST')</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2688</x><y>1008</y><w>184</w><h>128</h></coordinates><panel_attributes>class AuctionAPI
+--
+
++R cdn: string;
+
+--
+
++ getLotList(): Promise&lt;IItem[]&gt;
++ orderLots():Promise&lt;IOrderResult&gt;</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2936</x><y>1008</y><w>80</w><h>72</h></coordinates><panel_attributes>Interface
+&lt;IOrderResul&gt;
+--
+id: string;
+total: number</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2728</x><y>1200</y><w>104</w><h>120</h></coordinates><panel_attributes>Interface
+&lt;IItem&gt;
+--
+id: string;
+description: string;
+image: string;
+title: string;
+category: string;
+price: number;</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>2864</x><y>1016</y><w>88</w><h>72</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;70;90;10</additional_attributes></element><element><id>Relation</id><coordinates><x>2760</x><y>1128</y><w>40</w><h>88</h></coordinates><panel_attributes>lt=&lt;&lt;.</panel_attributes><additional_attributes>10;10;30;90</additional_attributes></element><element><id>Relation</id><coordinates><x>2776</x><y>944</y><w>88</w><h>80</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>90;10;10;80</additional_attributes></element><element><id>UMLClass</id><coordinates><x>1200</x><y>0</y><w>1360</w><h>808</h></coordinates><panel_attributes>PRESENTER
+bg=yellow
+layer=0
+transparency=90</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1688</x><y>40</y><w>248</w><h>136</h></coordinates><panel_attributes>/AbstractClass Model/
+--
+
++ data: Partial&lt;T&gt;
+# events: IEvents
+
+--
+
++ emitChanges(event: string, payload?: object)
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>2176</x><y>32</y><w>280</w><h>272</h></coordinates><panel_attributes>EventEmitter
+--
+constructor:
+
++ container: HTMLFormElement
++ events: IEvents
+
+--
++ on&lt;T extends object&gt;(eventName: EventName, callback: (event: T) =&gt; void)
++ off(eventName: EventName, callback: Subscriber)
++ emit&lt;T extends object&gt;(eventName: string, data?: T)
+
++ onAll(callback: (event: EmitterEvent) =&gt; void)
++ offAll()
++ trigger&lt;T extends object&gt;(eventName: string, context?: Partial&lt;T&gt;)</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1824</x><y>256</y><w>280</w><h>272</h></coordinates><panel_attributes>AppState
+--
+
+
+--
++ setCatalog(items: IItem[])
+set addItemInBasket(items: LotItem)
+get addItemInBasket(): any
+get getIdOrder():string[]
++ deleteItemOrder(item: LotItem)
++ clearBasket()
++ getTotal()
++ checkAddBasket(item: LotItem): boolean
++ setOrderFieldPay(field: keyof IOrderForm, value: string)
++ setOrderField(field: keyof IOrderForm, value: string)
++ checkPay(data: PayButtons)
++ validateOrderPay()
++ validateOrder()</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1360</x><y>256</y><w>280</w><h>272</h></coordinates><panel_attributes>LotItem
+--
+constructor:
++ id: string;
++ title: string;
++ image: string;
++ description: string;
++ about: string;
++ category: string;
++ price: number;
++ status: 'ADD' | 'NOADD' = 'NOADD';
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>1488</x><y>168</y><w>288</w><h>104</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>340;10;10;110</additional_attributes></element><element><id>Relation</id><coordinates><x>1816</x><y>168</y><w>184</w><h>104</h></coordinates><panel_attributes>lt=&lt;&lt;-</panel_attributes><additional_attributes>10;10;210;110</additional_attributes></element></diagram>
