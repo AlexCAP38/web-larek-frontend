@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 import { Model } from "./base/Model";
 import { PayButtons, FormErrors, IOrder, IOrderForm } from "../types";
 import { IItem } from "../types";

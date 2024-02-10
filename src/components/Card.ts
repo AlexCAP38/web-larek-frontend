@@ -1,6 +1,6 @@
 import { Component } from "./base/Component";
 import { IItem } from "../types";
-import { ensureElement } from "../utils/utils";
+import { ensureElement, formmater } from "../utils/utils";
 import { LotItem } from "./AppData";
 
 interface ICardActions {
@@ -29,6 +29,8 @@ export class Card extends Component<IItem> {
     protected _category?: HTMLElement;
     protected _price?: HTMLElement;
     protected _id?: HTMLElement;
+    protected _indexItem: HTMLElement | null;
+
 
     constructor(protected blockName: string, container: HTMLElement, actions?: ICardActions) {
         super(container);
@@ -39,6 +41,8 @@ export class Card extends Component<IItem> {
         this._description = container.querySelector(`.${blockName}__description`);      //Описание
         this._category = container.querySelector(`.${blockName}__category`);      //Категорию
         this._price = container.querySelector(`.${blockName}__price`);      //Цена
+        this._indexItem = this.container.querySelector('.basket__item-index');
+
 
         //ЭТо клик по карточке, Если событие передали как аргумент занчит выполнить 
         if (actions?.onClick) {
@@ -47,6 +51,13 @@ export class Card extends Component<IItem> {
             } else {
                 container.addEventListener('click', actions.onClick);
             }
+        }
+    }
+
+    set index(value: number) {
+
+        if (this._indexItem) {
+            this._indexItem.textContent = value.toString();
         }
     }
 
@@ -63,7 +74,7 @@ export class Card extends Component<IItem> {
     }
 
     set checkPrice(item: LotItem) {          //Проверка если у карточки нет цены заблокировать кнопку вывести сообщение
-        if (typeof(item.price) != 'number') {
+        if (typeof (item.price) != 'number') {
             this.setText(this._price, 'Товар не имеет цены, обратитесь к администратору')
             this.setDisabled(this._button, true)
         }
@@ -79,9 +90,8 @@ export class Card extends Component<IItem> {
     }
 
     set price(value: number) {      //установить название
-
-        // console.log(value)
-        this.setText(this._price, value);
+        const modValue = `${formmater.format(value)} синапсов`
+        this.setText(this._price, modValue);
     }
 
     set category(value: string) {      //установить название

@@ -1,5 +1,5 @@
 import { Component } from "../base/Component";
-import { cloneTemplate, createElement, ensureElement } from "../../utils/utils";
+import { formmater, createElement, ensureElement } from "../../utils/utils";
 import { EventEmitter } from "../base/events";
 
 interface IBasketView {
@@ -19,7 +19,6 @@ export class Basket extends Component<IBasketView> {        //Класс хра�
         this._list = ensureElement<HTMLElement>('.basket__list', this.container);
         this._total = this.container.querySelector('.basket__price');
         this._button = this.container.querySelector('.basket__button');
-
         if (this._button) {     //НАЖАЛИ НА конпку оформить заказ, вызвать событие
             this._button.addEventListener('click', () => {
                 events.emit('order:open');
@@ -47,6 +46,7 @@ export class Basket extends Component<IBasketView> {        //Класс хра�
     }
 
     set total(total: number) {
-        this.setText(this._total, total);
+        const modTotal = `${formmater.format(total)} синапсов`
+        this.setText(this._total, modTotal);
     }
 }
