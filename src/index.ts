@@ -4,9 +4,9 @@ import './scss/styles.scss';
 import { API_URL, CDN_URL } from "./utils/constants";
 import { EventEmitter } from './components/base/events';
 import { Page } from "./components/Page";
-import { cloneTemplate, createElement, ensureElement } from "./utils/utils";
+import { cloneTemplate, ensureElement } from "./utils/utils";
 import { Card } from './components/Card';
-import { AppState, CatalogChangeEvent, LotItem } from "./components/AppData";
+import { AppState, LotItem } from "./components/AppData";
 import { AuctionAPI } from './components/AuctionAPI';
 import { Modal } from "./components/common/Modal";
 import { Basket } from "./components/common/Basket";
@@ -24,8 +24,8 @@ const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');     //
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');     //заказ оформлен
 
 //инициалиазция экземпляров
-const events = new EventEmitter();        //Экземпляр работающий с событиями
 const api = new AuctionAPI(CDN_URL, API_URL);       //Экземпляр для работы с данными
+const events = new EventEmitter();        //Экземпляр работающий с событиями
 const appData = new AppState({}, events);      //Экземпляр хранить в себе информацию карточек
 const page = new Page(document.body, events);      //Экземпляр для работы с основным окном
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events, page);      //Экземпляр для работы с модалным окном
@@ -103,11 +103,11 @@ events.on('basket:open', (() => {       //НАЖАЛИ НА КОРЗИНУ
     basket.selected = appData.order.items;       //Блокируем кнопку оформить если товара нет 
     basket.total = appData.getTotal();         //Отобразить Сумму все товаров в корзине
 
-    basket.items = appData.order.items.map((item: IItem) => {      //Добавить шаблоны карточек для отображения в корзине
+    basket.items = appData.order.items.map((item: IItem, index) => {      //Добавить шаблоны карточек для отображения в корзине
 
         const card = new Card('card', cloneTemplate(cardBasketTemplate),    //Создаст разметку для корзины из шаблона
             { onClick: () => { events.emit('Basket:itemDelete', item) } });       //Событие на удаление товара изкорзины
-
+        card.index = index + 1;        //Сам кайфую ))
         return card.render({ title: item.title, price: item.price })
 
     })
